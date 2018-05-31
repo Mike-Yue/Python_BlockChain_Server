@@ -14,7 +14,6 @@ let query_table_size = "SELECT count(*) as size FROM BlockChain"
 let insert_row_data = "INSERT INTO BlockChain(Block_Number, Nonce, Data, Previous_Hash, Current_Hash) VALUES (?, ?, ?, ?, ?)"
 
 global.BlockChain = []
-global.times = []
 
 class Block{
 	constructor(block_num, block_nonce, block_data, block_previous_hash, block_current_hash){
@@ -37,17 +36,6 @@ let db = new sqlite3.Database('C:/Users/Mike/PycharmProjects/firstProject/venv/b
 	console.log('Connected to blockchain storage database');
 });
 
-db.all(query_time_data, [], (err, rows)=>{
-	if(err){
-		throw err;
-	}
-	rows.forEach((row)=>{
-		var time = row.Times
-		times.push(time)
-	})
-})
-
-//Queries table for size and then prints out all the row data
 db.all(query_row_data, [], (err, rows)=>{
 	if(err){
 		throw err;
@@ -59,11 +47,13 @@ db.all(query_row_data, [], (err, rows)=>{
 	console.log(BlockChain.length)
 })
 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 
 app.get('/', function (req, res) {
+	console.log('Get Request received!')
 	var data = BlockChain[BlockChain.length - 1]
     res.status(200).json(data)
 })
@@ -74,7 +64,20 @@ app.get('/allblocks', function(req, res){
 })
 
 app.get('/times', function(req, res){
-	res.status(200).json(times)
+	var times = []
+	//Queries table for size and then prints out all the row data
+	db.all(query_time_data, [], (err, rows)=>{
+		if(err){
+			throw err;
+		}
+		rows.forEach((row)=>{
+			var time = row.Times
+			times.push(time)
+		})
+		console.log(times.length)
+		res.status(200).json(times)
+	})
+
 })
 
 app.post("/postdata", (req, res) => {
