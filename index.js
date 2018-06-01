@@ -33,7 +33,7 @@ let db = new sqlite3.Database('C:/Users/Mike/PycharmProjects/firstProject/venv/b
 	if(err){
 		console.error(err.message);
 	}
-	console.log('Connected to blockchain storage database');
+	console.log('Connected to database');
 });
 
 db.all(query_row_data, [], (err, rows)=>{
@@ -44,7 +44,6 @@ db.all(query_row_data, [], (err, rows)=>{
 		var block = new Block(row.Block_Number, row.Nonce, row.Data, row.Previous_Hash, row.Current_Hash)
 		BlockChain.push(block)
 	})
-	console.log(BlockChain.length)
 })
 
 
@@ -53,17 +52,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 
 app.get('/', function (req, res) {
-	console.log('Get Request received!')
+	console.log('Get Request for mining a block received!')
 	var data = BlockChain[BlockChain.length - 1]
     res.status(200).json(data)
 })
 
 app.get('/allblocks', function(req, res){
+	console.log('Get Request for all blocks received!')
 	var data = BlockChain //Returns all blocks
 	res.status(200).json(data)
 })
 
 app.get('/times', function(req, res){
+	console.log('Get Request for times data received!')
 	var times = []
 	//Queries table for size and then prints out all the row data
 	db.all(query_time_data, [], (err, rows)=>{
@@ -74,13 +75,13 @@ app.get('/times', function(req, res){
 			var time = row.Times
 			times.push(time)
 		})
-		console.log(times.length)
 		res.status(200).json(times)
 	})
 
 })
 
 app.post("/postdata", (req, res) => {
+	console.log('Post Request received')
 	var posted_data = [req.body.number, req.body.nonce, req.body.data, req.body.prev_hash, req.body.curr_hash, req.body.time]
 	var block = new Block(req.body.number, req.body.nonce, req.body.data, req.body.prev_hash, req.body.curr_hash)
 	BlockChain.push(block)
@@ -90,26 +91,15 @@ app.post("/postdata", (req, res) => {
 			return console.log(err.message)
 		}
 		res.send("Haha!")
-		console.log("It worked!")
 	})
 
 	db.run(insert_time_data, [req.body.time], function(err){
 		if(err){
 			return console.log(err.message)
 		}
-		console.log("Time logged!")
 	})
 
 });
 
-app.post("/posttime", (req, res) => {
-	console.log(req.body.total_time)
-	/*db.run(insert_time_data, [req.body.total_time], function(err){
-		if(err){
-			return console.log(err.message)
-		}
-		console.log("Time posted!")
-	})*/
-})
 
-app.listen(8080, () => console.log('Example app listening on port 8080!'))
+app.listen(8080, () => console.log('Server is up and running!'))
