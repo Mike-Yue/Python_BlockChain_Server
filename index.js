@@ -57,6 +57,20 @@ app.get('/', function (req, res) {
     res.status(200).json(data)
 })
 
+app.get('/interrupt', function(req, res){
+	var size
+	console.log('Making sure Block has not already been mined')
+	db.all(query_table_size, [], (err, rows)=>{
+	if(err){
+		throw err;
+	}
+	rows.forEach((row)=>{
+		size = (row.size)
+	})
+	res.status(200).json(size)
+})
+})
+
 app.get('/allblocks', function(req, res){
 	console.log('Get Request for all blocks received!')
 	var data = BlockChain //Returns all blocks
