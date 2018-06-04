@@ -6,7 +6,9 @@ const bodyParser = require('body-parser')
 const sqlite3 = require('sqlite3').verbose()
 const PythonShell = require('python-shell')
 const sleep = require('system-sleep')
+const crypto = require('crypto')
 
+let insert_account_data = "INSERT INTO Accounts(Username, Password) VALUES (?, ?)"
 let insert_time_data = "INSERT INTO Mining_Times(Times) VALUES (?)"
 let query_time_data = "SELECT * from Mining_Times"
 let query_row_data = "SELECT * from BlockChain ORDER BY Block_Number"
@@ -75,6 +77,8 @@ app.get('/allblocks', function(req, res){
 	console.log('Get Request for all blocks received!')
 	var data = BlockChain //Returns all blocks
 	res.status(200).json(data)
+	var test = "test"
+	console.log(crypto.createHash('sha256').update(test).digest('hex'))
 })
 
 app.get('/times', function(req, res){
@@ -94,8 +98,21 @@ app.get('/times', function(req, res){
 
 })
 
+app.post("/postaccount", (req, res)=>{
+	console.log('Post Account Request received')
+	var username = req.body.username
+	var password = crypto.createHash('sha256').update(req.body.password).digest('hex')
+	db.run(insert_account_data, [username, password], function(err){
+		if(err){
+			return console.log(err.message)
+		}
+	})
+	console.log("Account Creation successful!")
+	res.send("lit")
+})
+
 app.post("/postdata", (req, res) => {
-	console.log('Post Request received')
+	console.log('Post Data Request received')
 	var posted_data = [req.body.number, req.body.nonce, req.body.data, req.body.prev_hash, req.body.curr_hash, req.body.time]
 	var block = new Block(req.body.number, req.body.nonce, req.body.data, req.body.prev_hash, req.body.curr_hash)
 	BlockChain.push(block)
