@@ -101,7 +101,11 @@ app.get('/times', function(req, res){
 app.post("/postaccount", (req, res)=>{
 	console.log('Post Account Request received')
 	var username = req.body.username
-	var password = crypto.createHash('sha256').update(req.body.password).digest('hex')
+	var password = req.body.password.concat(username)
+	for(var i = 0; i < 100000; i++){
+		password = crypto.createHash('sha256').update(password).digest('hex')
+	}
+	
 	db.run(insert_account_data, [username, password], function(err){
 		if(err){
 			return console.log(err.message)
