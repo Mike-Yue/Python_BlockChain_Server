@@ -10,6 +10,7 @@ const crypto = require('crypto')
 
 let insert_account_data = "INSERT INTO Accounts(Username, Password) VALUES (?, ?)"
 let insert_time_data = "INSERT INTO Mining_Times(Times) VALUES (?)"
+let query_account_data = "SELECT * from Accounts WHERE Username = (?)"
 let query_time_data = "SELECT * from Mining_Times"
 let query_row_data = "SELECT * from BlockChain ORDER BY Block_Number"
 let query_table_size = "SELECT count(*) as size FROM BlockChain"
@@ -108,11 +109,45 @@ app.post("/postaccount", (req, res)=>{
 	
 	db.run(insert_account_data, [username, password], function(err){
 		if(err){
+			res.status(400).send("failed")
 			return console.log(err.message)
 		}
+		res.send("lit")
 	})
-	console.log("Account Creation successful!")
-	res.send("lit")
+})
+
+app.post('/signin', (req, res)=>{
+	console.log('Sign in Request received')
+	var username = req.body.username
+	var password = req.body.password.concat(username)
+	for(var i = 0; i < 100000; i++){
+		password = crypto.createHash('sha256').update(password).digest('hex')
+	}
+
+	db.all(query_account_data, [username], function(err, rows){
+		if(err){
+			res.status(400).send("failed")
+			return console.log(err.message)
+		}
+		if(rows.length == 0){
+			res.status(400).send("Wrong user credentials")
+			return console.log("Wrong user credentials")
+		}
+		rows.forEach((row)=>{
+			if(row.Password == password){
+				console.log("Account matches")
+			}
+			else{
+				console.log("Does not match")
+				res.status(400).send("invalid information")
+				return console.log("Wrong user credentials")
+			}
+			res.send('lit')
+		})
+
+	})
+
+
 })
 
 app.post("/postdata", (req, res) => {
