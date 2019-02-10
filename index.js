@@ -9,7 +9,7 @@ const sleep = require('system-sleep')
 const crypto = require('crypto')
 
 let insert_account_data = "INSERT INTO Accounts(Username, Password) VALUES (?, ?)"
-let insert_time_data = "INSERT INTO Mining_Times(Times) VALUES (?)"
+let insert_time_data = "INSERT INTO Mining_Times(Time) VALUES (?)"
 let query_account_data = "SELECT * from Accounts WHERE Username = (?)"
 let query_time_data = "SELECT * from Mining_Times"
 let query_row_data = "SELECT * from BlockChain ORDER BY Block_Number"
@@ -32,7 +32,7 @@ app.use(basicAuth({
 	users: { 'admin': 'supersecret'}
 })) 
 
-let db = new sqlite3.Database('C:/Users/Mike/PycharmProjects/firstProject/venv/blockchain_storage.db', (err) =>{
+let db = new sqlite3.Database('blockchain_storage.db', (err) =>{
 	if(err){
 		console.error(err.message);
 	}
@@ -56,7 +56,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/', function (req, res) {
 	console.log('Get Request for mining a block received!')
-	var data = BlockChain[BlockChain.length - 1]
+	if(BlockChain.length == 0){
+		var data = null
+	}
+	else{
+		var data = BlockChain[BlockChain.length - 1]
+	}
     res.status(200).json(data)
 })
 
@@ -70,6 +75,7 @@ app.get('/interrupt', function(req, res){
 	rows.forEach((row)=>{
 		size = (row.size)
 	})
+	console.log(size)
 	res.status(200).json(size)
 })
 })
@@ -78,8 +84,6 @@ app.get('/allblocks', function(req, res){
 	console.log('Get Request for all blocks received!')
 	var data = BlockChain //Returns all blocks
 	res.status(200).json(data)
-	var test = "test"
-	console.log(crypto.createHash('sha256').update(test).digest('hex'))
 })
 
 app.get('/times', function(req, res){
@@ -172,4 +176,4 @@ app.post("/postdata", (req, res) => {
 });
 
 
-app.listen(8080, () => console.log('Server is up and running!'))
+app.listen(8080, () => console.log('Server is up and running on port 8080!', BlockChain.length))
